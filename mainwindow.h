@@ -35,8 +35,8 @@ private:
     int height=0;
     int started=-1;
     int elapsedTime=0;
-    double score;
-    double speed;
+    int score;
+    int interval=500;
     QTimer *timer;
     QTimer *gameTimer;
     std::deque<QPoint> snake;
@@ -53,5 +53,7 @@ private:
     void growFood();
     bool inSnake(int x, int y);
     void updateWatch();
+    QSet<QPoint> walls;
+    void createBoundaryWalls();
 };
 #endif // MAINWINDOW_H

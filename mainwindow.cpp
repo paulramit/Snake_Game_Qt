@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &MainWindow::moveSnake);
-    timer->start(75);
+    timer->start(interval);
 
     gameTimer = new QTimer(this);
     connect(gameTimer, &QTimer::timeout, this, &MainWindow::updateWatch);
@@ -59,15 +59,42 @@ void MainWindow::colorPointRelative(int x, int y, int r, int g, int b) {
 }
 
 void MainWindow::on_New_Game_clicked() {
+    // Check if level and difficulty are selected
+    if (!(ui->Mode_1->isChecked() || ui->Mode_2->isChecked() || ui->Mode_3->isChecked())) {
+        ui->Prompt->setText("Select a Level to Start the Game.");
+        return;
+    }
+    if (!(ui->Easy->isChecked() || ui->Medium->isChecked() || ui->Hard->isChecked())) {
+        ui->Prompt->setText("Select a Difficulty to Start the Game.");
+        return;
+    }
+
+    // Set the interval based on selected difficulty
+    int interval = 0;
+    if (ui->Easy->isChecked()) {
+        interval = 100;
+    } else if (ui->Medium->isChecked()) {
+        interval = 80;
+    } else if (ui->Hard->isChecked()) {
+        interval = 60;
+    }
+
+    // Restart the game timer with the new interval
+    timer->start(interval);
+
+    // Initialize game parameters
     width = ui->workArea->width();
     height = ui->workArea->height();
-    qDebug()<<width<<' '<<height;
     centerX = width / 2;
     centerY = height / 2;
     score = 0;
+
+    // Update UI components
     ui->Prompt->setText("Press Enter to Start");
     ui->Score->setText("Score: " + QString::number(static_cast<int>(score)));
+    ui->Stopwatch->setText("00:00:00");
 
+    // Clear the canvas and reset snake data
     QPixmap canvas = ui->workArea->pixmap();
     canvas.fill(Qt::white);
     ui->workArea->setPixmap(canvas);
@@ -80,13 +107,74 @@ void MainWindow::on_New_Game_clicked() {
         colorPointRelative(i, 0, 0, 0, 0);
     }
 
+    // Reset game state
     direction = {0, 0};
     score = 0;
-    speed = 1;
     food = {INT_MAX, INT_MAX};
     started = 0;
-    elapsedTime=0;
-    ui->Stopwatch->setText("00:00:00");
+    elapsedTime = 0;
+
+    // Add walls for Mode_2
+    if (ui->Mode_2->isChecked()) {
+        createBoundaryWalls();
+    }
+}
+
+// Function to create boundary walls
+void MainWindow::createBoundaryWalls() {
+    walls.clear(); // Clear any existing walls
+
+    int outerXStart = 0, outerXEnd = width - 1;
+    int outerYStart = 0, outerYEnd = height - 1;
+    int innerXStart = 2, innerXEnd = width - 3;
+    int innerYStart = 2, innerYEnd = height - 3;
+
+    // Deep orange color
+    int r = 255, g = 140, b = 0;
+
+    // Add points for the outer rectangle
+    for (int x = outerXStart; x <= outerXEnd; x+=gridOffset) {
+        for (int i = 0; i < 2; ++i) { // Top and Bottom rows
+            walls.insert(QPoint(x, outerYStart + i));
+            walls.insert(QPoint(x, outerYEnd - i));
+            colorPointAbsolute(x, outerYStart + i, r, g, b, gridOffset);
+            Delay;
+            colorPointAbsolute(x, outerYEnd - i, r, g, b, gridOffset);
+            Delay;
+        }
+    }
+    for (int y = outerYStart; y <= outerYEnd; y+=gridOffset) {
+        for (int i = 0; i < 2; ++i) { // Left and Right columns
+            walls.insert(QPoint(outerXStart + i, y));
+            walls.insert(QPoint(outerXEnd - i, y));
+            colorPointAbsolute(outerXStart + i, y, r, g, b, gridOffset);
+            Delay;
+            colorPointAbsolute(outerXEnd - i, y, r, g, b, gridOffset);
+            Delay;
+        }
+    }
+
+    // Add points for the inner rectangle
+    for (int x = innerXStart; x <= innerXEnd; x+=gridOffset) {
+        for (int i = 0; i < 2; ++i) { // Top and Bottom rows
+            walls.insert(QPoint(x, innerYStart + i));
+            walls.insert(QPoint(x, innerYEnd - i));
+            colorPointAbsolute(x, innerYStart + i, r, g, b, gridOffset);
+            Delay;
+            colorPointAbsolute(x, innerYEnd - i, r, g, b, gridOffset);
+            Delay;
+        }
+    }
+    for (int y = innerYStart; y <= innerYEnd; y+=gridOffset) {
+        for (int i = 0; i < 2; ++i) { // Left and Right columns
+            walls.insert(QPoint(innerXStart + i, y));
+            walls.insert(QPoint(innerXEnd - i, y));
+            colorPointAbsolute(innerXStart + i, y, r, g, b, gridOffset);
+            Delay;
+            colorPointAbsolute(innerXEnd - i, y, r, g, b, gridOffset);
+            Delay;
+        }
+    }
 }
 
 QColor MainWindow::getPixelColor(int x, int y) {
