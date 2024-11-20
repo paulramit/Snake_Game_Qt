@@ -92,6 +92,78 @@
      <string>Time</string>
     </property>
    </widget>
+   <widget class="QGroupBox" name="Mode">
+    <property name="geometry">
+     <rect>
+      <x>1010</x>
+      <y>350</y>
+      <width>140</width>
+      <height>143</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Mode</string>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QRadioButton" name="Mode_1">
+       <property name="text">
+        <string>Unbound</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="Mode_2">
+       <property name="text">
+        <string>Jailed</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="Mode_3">
+       <property name="text">
+        <string>Trick O' Treat</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QGroupBox" name="Difficulty">
+    <property name="geometry">
+     <rect>
+      <x>1030</x>
+      <y>520</y>
+      <width>140</width>
+      <height>143</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Difficulty</string>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QRadioButton" name="Easy">
+       <property name="text">
+        <string>Easy</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="Medium">
+       <property name="text">
+        <string>Medium</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="Hard">
+       <property name="text">
+        <string>Hard</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

@@ -61,12 +61,12 @@ void MainWindow::colorPointRelative(int x, int y, int r, int g, int b) {
 void MainWindow::on_New_Game_clicked() {
     width = ui->workArea->width();
     height = ui->workArea->height();
+    qDebug()<<width<<' '<<height;
     centerX = width / 2;
     centerY = height / 2;
     score = 0;
     ui->Prompt->setText("Press Enter to Start");
     ui->Score->setText("Score: " + QString::number(static_cast<int>(score)));
-    //ui->Speed->setText("Speed Multiplier: " + QString::number(speed, 'f', 1) + "x");
 
     QPixmap canvas = ui->workArea->pixmap();
     canvas.fill(Qt::white);
