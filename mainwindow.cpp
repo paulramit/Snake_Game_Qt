@@ -73,11 +73,11 @@ void MainWindow::on_New_Game_clicked() {
     // Set the interval based on selected difficulty
     int interval = 0;
     if (ui->Easy->isChecked()) {
-        interval = 100;
+        interval = 85;
     } else if (ui->Medium->isChecked()) {
-        interval = 80;
+        interval = 70;
     } else if (ui->Hard->isChecked()) {
-        interval = 60;
+        interval = 55;
     }
 
     // Restart the game timer with the new interval
