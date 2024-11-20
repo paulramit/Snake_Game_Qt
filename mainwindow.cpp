@@ -6,8 +6,9 @@
 #include <QTimer>
 #include <QMouseEvent>
 #include <QKeyEvent>
-
 #define Delay delay(1)
+QElapsedTimer bombTimer;
+bool nextBomb=false;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -90,7 +91,6 @@ void MainWindow::on_New_Game_clicked() {
     score = 0;
 
     // Update UI components
-    ui->Prompt->setText("Press Enter to Start");
     ui->Score->setText("Score: " + QString::number(static_cast<int>(score)));
     ui->Stopwatch->setText("00:00:00");
 
@@ -111,69 +111,151 @@ void MainWindow::on_New_Game_clicked() {
     direction = {0, 0};
     score = 0;
     food = {INT_MAX, INT_MAX};
+    bomb = {INT_MAX, INT_MAX};
     started = 0;
     elapsedTime = 0;
-
-    // Add walls for Mode_2
+    ui->Prompt->setText("Rendering Playground");
     if (ui->Mode_2->isChecked()) {
-        createBoundaryWalls();
+        createMode2();
     }
+    else if (ui->Mode_3->isChecked()) {
+        createMode3();
+    }
+    ui->Prompt->setText("Press Enter to Start");
 }
 
 // Function to create boundary walls
-void MainWindow::createBoundaryWalls() {
+void MainWindow::createMode2() {
     walls.clear(); // Clear any existing walls
 
-    int outerXStart = 0, outerXEnd = width - 1;
-    int outerYStart = 0, outerYEnd = height - 1;
-    int innerXStart = 2, innerXEnd = width - 3;
-    int innerYStart = 2, innerYEnd = height - 3;
+    int outerXStart = -30, outerXEnd = 29;
+    int outerYStart = -25, outerYEnd = 24;
 
     // Deep orange color
     int r = 255, g = 140, b = 0;
 
     // Add points for the outer rectangle
-    for (int x = outerXStart; x <= outerXEnd; x+=gridOffset) {
+    for (int x = outerXStart; x <= outerXEnd; x++) {
         for (int i = 0; i < 2; ++i) { // Top and Bottom rows
             walls.insert(QPoint(x, outerYStart + i));
             walls.insert(QPoint(x, outerYEnd - i));
-            colorPointAbsolute(x, outerYStart + i, r, g, b, gridOffset);
+            colorPointRelative(x, outerYStart + i, r, g, b);
             Delay;
-            colorPointAbsolute(x, outerYEnd - i, r, g, b, gridOffset);
+            colorPointRelative(x, outerYEnd - i, r, g, b);
             Delay;
         }
     }
-    for (int y = outerYStart; y <= outerYEnd; y+=gridOffset) {
+    for (int y = outerYStart; y <= outerYEnd; y++) {
         for (int i = 0; i < 2; ++i) { // Left and Right columns
             walls.insert(QPoint(outerXStart + i, y));
             walls.insert(QPoint(outerXEnd - i, y));
-            colorPointAbsolute(outerXStart + i, y, r, g, b, gridOffset);
+            colorPointRelative(outerXStart + i, y, r, g, b);
             Delay;
-            colorPointAbsolute(outerXEnd - i, y, r, g, b, gridOffset);
+            colorPointRelative(outerXEnd - i, y, r, g, b);
             Delay;
         }
+    }
+}
+
+void MainWindow::createMode3() {
+    walls.clear(); // Clear any existing walls
+
+    // Define the boundary range
+    int outerXStart = -30, outerXEnd = 29;
+    int outerYStart = -25, outerYEnd = 24;
+
+    // Divide the lengths and breadths by 5 to get dividing points
+    int length = outerXEnd - outerXStart + 1;
+    int breadth = outerYEnd - outerYStart + 1;
+
+    int l1 = outerXStart + length / 5;
+    int l2 = outerXStart + 2 * length / 5;
+    int l3 = outerXStart + 3 * length / 5;
+    int l4 = outerXStart + 4 * length / 5;
+
+    int w1 = outerYStart + breadth / 5;
+    int w2 = outerYStart + 2 * breadth / 5;
+    int w3 = outerYStart + 3 * breadth / 5;
+    int w4 = outerYStart + 4 * breadth / 5;
+
+    // Deep orange color
+    int r = 255, g = 140, b = 0;
+
+    // Draw upper and lower boundaries
+    for (int x = l1; x <= l4; ++x) {
+        walls.insert(QPoint(x, outerYStart));
+        colorPointRelative(x, outerYStart, r, g, b);
+        Delay;
+        walls.insert(QPoint(x, outerYEnd));
+        colorPointRelative(x, outerYEnd, r, g, b);
+        Delay;
     }
 
-    // Add points for the inner rectangle
-    for (int x = innerXStart; x <= innerXEnd; x+=gridOffset) {
-        for (int i = 0; i < 2; ++i) { // Top and Bottom rows
-            walls.insert(QPoint(x, innerYStart + i));
-            walls.insert(QPoint(x, innerYEnd - i));
-            colorPointAbsolute(x, innerYStart + i, r, g, b, gridOffset);
-            Delay;
-            colorPointAbsolute(x, innerYEnd - i, r, g, b, gridOffset);
-            Delay;
-        }
+    // Draw left and right boundaries
+    for (int y = w1; y <= w4; ++y) {
+        walls.insert(QPoint(outerXStart, y));
+        colorPointRelative(outerXStart, y, r, g, b);
+        Delay;
+        walls.insert(QPoint(outerXEnd, y));
+        colorPointRelative(outerXEnd, y, r, g, b);
+        Delay;
     }
-    for (int y = innerYStart; y <= innerYEnd; y+=gridOffset) {
-        for (int i = 0; i < 2; ++i) { // Left and Right columns
-            walls.insert(QPoint(innerXStart + i, y));
-            walls.insert(QPoint(innerXEnd - i, y));
-            colorPointAbsolute(innerXStart + i, y, r, g, b, gridOffset);
-            Delay;
-            colorPointAbsolute(innerXEnd - i, y, r, g, b, gridOffset);
-            Delay;
-        }
+
+    // Draw inner wall system
+    // (l1, w1) to (l2, w1)
+    for (int x = l1; x <= l2; ++x) {
+        walls.insert(QPoint(x, w1));
+        colorPointRelative(x, w1, r, g, b);
+        Delay;
+    }
+
+    // (l3, w1) to (l4, w1)
+    for (int x = l3; x <= l4; ++x) {
+        walls.insert(QPoint(x, w1));
+        colorPointRelative(x, w1, r, g, b);
+        Delay;
+    }
+
+    // (l4, w1) to (l4, w2)
+    for (int y = w1; y <= w2; ++y) {
+        walls.insert(QPoint(l4, y));
+        colorPointRelative(l4, y, r, g, b);
+        Delay;
+    }
+
+    // (l4, w3) to (l4, w4)
+    for (int y = w3; y <= w4; ++y) {
+        walls.insert(QPoint(l4, y));
+        colorPointRelative(l4, y, r, g, b);
+        Delay;
+    }
+
+    // (l4, w4) to (l3, w4)
+    for (int x = l4; x >= l3; --x) {
+        walls.insert(QPoint(x, w4));
+        colorPointRelative(x, w4, r, g, b);
+        Delay;
+    }
+
+    // (l2, w4) to (l1, w4)
+    for (int x = l2; x >= l1; --x) {
+        walls.insert(QPoint(x, w4));
+        colorPointRelative(x, w4, r, g, b);
+        Delay;
+    }
+
+    // (l1, w4) to (l1, w3)
+    for (int y = w4; y >= w3; --y) {
+        walls.insert(QPoint(l1, y));
+        colorPointRelative(l1, y, r, g, b);
+        Delay;
+    }
+
+    // (l1, w2) to (l1, w1)
+    for (int y = w2; y >= w1; --y) {
+        walls.insert(QPoint(l1, y));
+        colorPointRelative(l1, y, r, g, b);
+        Delay;
     }
 }
 
@@ -182,19 +264,34 @@ QColor MainWindow::getPixelColor(int x, int y) {
     return image.pixelColor(x, y);
 }
 
-bool MainWindow::inSnake(int x, int y) {
-    return snakePoints.contains({x, y});
-}
-
 void MainWindow::growFood() {
     int x, y;
     do {
         x = (rand() % (width / gridOffset)) - (width / (2 * gridOffset));
         y = (rand() % (height / gridOffset)) - (height / (2 * gridOffset));
-    } while (inSnake(x, y));
+    } while (snakePoints.contains({x, y}) || walls.contains({x, y}) || bomb==QPoint(x, y));
 
     food = QPoint(x, y);
-    colorPointRelative(x, y, 255, 0, 0);
+    colorPointRelative(x, y, 0, 0, 255);
+}
+
+void MainWindow::plantBomb() {
+    // Check if a bomb should be planted based on the probability
+    if (static_cast<double>(rand()) / RAND_MAX > bombProbability) {
+        return; // Do not plant a bomb this time
+    }
+
+    int x, y;
+    do {
+        // Generate random coordinates for the bomb
+        x = (rand() % (width / gridOffset)) - (width / (2 * gridOffset));
+        y = (rand() % (height / gridOffset)) - (height / (2 * gridOffset));
+    } while (snakePoints.contains({x, y}) || walls.contains({x, y}) || QPoint(x, y) == food);
+
+    // Set the bomb position and color it red
+    bomb = QPoint(x, y);
+    colorPointRelative(x, y, 255, 0, 0); // Red color for the bomb
+    bombTimer.start();
 }
 
 void MainWindow::moveSnake() {
@@ -203,6 +300,11 @@ void MainWindow::moveSnake() {
 
     if (food == QPoint(INT_MAX, INT_MAX))
         growFood();
+
+    if (bomb == QPoint(INT_MAX, INT_MAX) && !nextBomb){
+        plantBomb();
+        ui->Bomb->setText("BOMB ALERT!!!");
+    }
 
     QPoint head = snake.back();
     int nextX = head.x() + direction[0], nextY = head.y() + direction[1];
@@ -218,13 +320,7 @@ void MainWindow::moveSnake() {
     else if (nextY >= height / (2 * gridOffset))
         nextY = -(height / (2 * gridOffset));
 
-    /*if (absX < 0 || absX > width || absY < 0 || absY > height || snakePoints.contains({nextX, nextY})) {
-        ui->Prompt->setText("Game Over");
-        direction = {0, 0};
-        started = -1;
-        return;
-    }*/
-    if (snakePoints.contains({nextX, nextY})) {
+    if (snakePoints.contains({nextX, nextY}) || walls.contains({nextX, nextY}) || bomb == QPoint(nextX, nextY)) {
         ui->Prompt->setText("Game Over");
         direction = {0, 0};
         started = -1;
@@ -237,10 +333,8 @@ void MainWindow::moveSnake() {
     colorPointRelative(nextX, nextY, 0, 0, 0);
 
     if (food == QPoint(nextX, nextY)) {
-        //speed += 0.1;
         score += 1;
         ui->Score->setText("Score: " + QString::number(static_cast<int>(score)));
-        //ui->Speed->setText("Speed Multiplier: " + QString::number(speed, 'f', 1) + "x");
         growFood();
     } else {
         QPoint tail = snake.front();
@@ -248,12 +342,24 @@ void MainWindow::moveSnake() {
         snake.pop_front();
         snakePoints.erase(snakePoints.find(tail));
     }
+
+    // Bomb diffusion logic
+    if (bombTimer.elapsed() > 12000 && bomb != QPoint(INT_MAX, INT_MAX) && !nextBomb) { // 5 seconds elapsed
+        colorPointRelative(bomb.x(), bomb.y(), 255, 255, 255); // Remove bomb by coloring it white
+        bomb = QPoint(INT_MAX, INT_MAX);
+        nextBomb=true;
+        ui->Bomb->setText("BOMB DIFFUSED.");
+    }
+    if(bombTimer.elapsed()>15000 && nextBomb)
+        ui->Bomb->clear();
+    if(bombTimer.elapsed()>20000 && nextBomb)
+        nextBomb=false;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     int key = event->key();
 
-    if (started == 0 && key == Qt::Key_Enter) {
+    if (started == 0 && (key == Qt::Key_Enter || key==Qt::Key_Return)) {
         direction = {1, 0};
         started = 1;
         ui->Prompt->setText("Game Started");

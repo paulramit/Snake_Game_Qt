@@ -18,13 +18,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 protected:
-    //bool eventFilter(QObject *watched, QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
 private slots:
-    //void on_showAxis_clicked();
-
-    //void on_gridlines_clicked();
-
     void on_New_Game_clicked();
 
 private:
@@ -51,9 +46,13 @@ private:
     void moveSnake();
     QColor getPixelColor(int x, int y);
     void growFood();
-    bool inSnake(int x, int y);
+    void plantBomb();
     void updateWatch();
     QSet<QPoint> walls;
-    void createBoundaryWalls();
+    void createMode2();
+    void createMode3();
+    QVector<QVector<bool>> bitmap;
+    double bombProbability=0.3;
+    QPoint bomb;
 };
 #endif // MAINWINDOW_H

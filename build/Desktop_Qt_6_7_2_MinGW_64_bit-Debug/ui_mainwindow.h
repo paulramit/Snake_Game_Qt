@@ -42,6 +42,7 @@ public:
     QRadioButton *Easy;
     QRadioButton *Medium;
     QRadioButton *Hard;
+    QLabel *Bomb;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -114,6 +115,9 @@ public:
 
         verticalLayout_2->addWidget(Hard);
 
+        Bomb = new QLabel(centralwidget);
+        Bomb->setObjectName("Bomb");
+        Bomb->setGeometry(QRect(1020, 220, 151, 20));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName("menubar");
@@ -144,6 +148,7 @@ public:
         Easy->setText(QCoreApplication::translate("MainWindow", "Easy", nullptr));
         Medium->setText(QCoreApplication::translate("MainWindow", "Medium", nullptr));
         Hard->setText(QCoreApplication::translate("MainWindow", "Hard", nullptr));
+        Bomb->setText(QCoreApplication::translate("MainWindow", "Bomb", nullptr));
     } // retranslateUi
 
 };
